@@ -47,6 +47,10 @@ def trace_to_dict(trace: Trace) -> dict[str, Any]:
                 "end_time": span.end_time,
                 "status": span.status.value,
                 "attributes": span.attributes,
+                "events": [
+                    {"timestamp": ts, "name": name, "attributes": attrs}
+                    for ts, name, attrs in span.events
+                ],
             }
             for span in trace.spans
         ],
@@ -60,8 +64,9 @@ def trace_to_json(trace: Trace, *, indent: int = 2) -> str:
 
 def trace_from_dict(payload: dict[str, Any]) -> Trace:
     """Reconstruct a trace from :func:`trace_to_dict` output."""
-    spans = [
-        Span(
+    spans: list[Span] = []
+    for item in payload["spans"]:
+        span = Span(
             name=item["name"],
             span_id=item["span_id"],
             trace_id=item["trace_id"],
@@ -71,8 +76,13 @@ def trace_from_dict(payload: dict[str, Any]) -> Trace:
             status=SpanStatus(item.get("status", "unset")),
             attributes=dict(item.get("attributes", {})),
         )
-        for item in payload["spans"]
-    ]
+        for event in item.get("events", []):
+            span.add_event(
+                event["name"],
+                timestamp=event["timestamp"],
+                **event.get("attributes", {}),
+            )
+        spans.append(span)
     return Trace(payload["trace_id"], spans)
 
 
