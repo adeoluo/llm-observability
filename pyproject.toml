@@ -1,23 +1,12 @@
 [project]
 name = "llm-observability"
 version = "0.1.0"
-description = "One-line description."
+description = "An LLM observability and tracing platform from scratch: hierarchical spans, token/cost/latency metrics, and trace analysis."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Adeolu Ogunnoiki" }]
-dependencies = [
-    "pydantic>=2.0",
-    "pydantic-settings>=2.0",
-    "structlog>=24.0",
-]
-
-[project.optional-dependencies]
-# install with: uv sync --extra ml
-ml = [
-    "numpy>=1.26",
-    "torch>=2.2",
-]
+dependencies = []
 
 [dependency-groups]
 dev = [
@@ -54,7 +43,6 @@ python_version = "3.11"
 strict = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 addopts = "-ra -q"
