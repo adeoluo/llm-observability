@@ -16,6 +16,9 @@ dev = [
     "pytest-cov>=5.0",
 ]
 
+[project.scripts]
+llm-observability = "llm_observability.cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
