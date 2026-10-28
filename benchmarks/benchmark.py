@@ -30,9 +30,8 @@ def _bench_aggregation(num_traces: int) -> float:
     traces = []
     for _ in range(num_traces):
         tracer = Tracer()
-        with tracer.span("agent.run"):
-            with tracer.span("llm.call") as span:
-                record_llm_call(span, model="gpt-4o", input_tokens=500, output_tokens=200)
+        with tracer.span("agent.run"), tracer.span("llm.call") as span:
+            record_llm_call(span, model="gpt-4o", input_tokens=500, output_tokens=200)
         traces.extend(tracer.traces())
     start = time.perf_counter()
     summarize_batch(traces)
