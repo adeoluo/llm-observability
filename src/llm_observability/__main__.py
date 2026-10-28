@@ -1,15 +1,12 @@
-"""Entrypoint: `python -m llm_observability`."""
+"""Entrypoint placeholder; the full CLI is added with the analysis module."""
 
 from __future__ import annotations
 
 from llm_observability import __version__
-from llm_observability.configuration import settings
 
 
 def main() -> None:
-    header = f"Llm Observability v{__version__}"
-    status = f"environment={settings.environment}, seed={settings.seed}"
-    print(f"{header} - {status}")
+    print(f"llm-observability v{__version__}")
 
 
 if __name__ == "__main__":
