@@ -1,13 +1,8 @@
-"""Entrypoint placeholder; the full CLI is added with the analysis module."""
+"""Enable ``python -m llm_observability`` to invoke the command-line interface."""
 
 from __future__ import annotations
 
-from llm_observability import __version__
-
-
-def main() -> None:
-    print(f"llm-observability v{__version__}")
-
+from llm_observability.cli import main
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
