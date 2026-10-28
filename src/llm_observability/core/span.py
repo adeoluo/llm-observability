@@ -37,10 +37,16 @@ class Span:
     end_time: float | None = None
     status: SpanStatus = SpanStatus.UNSET
     attributes: dict[str, Any] = field(default_factory=dict)
+    events: list[tuple[float, str, dict[str, Any]]] = field(default_factory=list)
 
     def set_attribute(self, key: str, value: Any) -> None:
         """Attach a key/value annotation to the span."""
         self.attributes[key] = value
+
+    def add_event(self, name: str, *, timestamp: float | None = None, **attributes: Any) -> None:
+        """Record a timestamped event within the span (a point-in-time log)."""
+        when = timestamp if timestamp is not None else time.perf_counter()
+        self.events.append((when, name, dict(attributes)))
 
     def finish(self, *, status: SpanStatus = SpanStatus.OK, end_time: float | None = None) -> None:
         """Mark the span complete, recording its end time and status."""
