@@ -1,27 +1,40 @@
-# Model / System Card - Llm Observability
+# System Card - LLM Observability
 
 ## Overview
-- **What it is:** 1 - 2 sentences.
-- **Base model(s):** e.g., Claude 3.5 Sonnet / GPT-4o / Llama-3-8B / from-scratch.
-- **Version & date:**
+
+- **What it is:** a tracing and metrics library for LLM applications - spans, trace trees,
+  cost and token metrics, and regression analysis.
+- **What it is not:** a model, a tokenizer, or a billing system. Token counts and prices
+  are provided by the caller.
+- **Version:** 0.1.0.
 
 ## Intended use
-- **Primary use cases:**
-- **Primary users:**
+
+- **Primary use cases:** instrumenting agent and retrieval pipelines; measuring latency,
+  tokens, and cost; catching performance or cost regressions between deployments.
+- **Primary users:** engineers operating LLM applications.
 
 ## Out-of-scope / prohibited use
-- Where this should **not** be used, and why.
+
+- Not a distributed tracing backend; it traces within a single process.
+- Cost figures are estimates, not authoritative billing.
 
 ## Performance
-- Summary of key metrics (link to [`EVALUATION_REPORT.md`](EVALUATION_REPORT.md)).
-- Known performance disparities across inputs / subgroups.
 
-## Risks & limitations
-- Failure modes, biases, hallucination behavior, brittleness.
-- **Dual-use / misuse considerations.**
+The deterministic demo traces a multi-step run and aggregates metrics in well under a
+millisecond. Correctness of nesting, aggregation, and regression detection is covered by
+tests.
+
+## Risks and limitations
+
+- In-memory and single-process; no cross-service propagation.
+- Estimated cost depends on an injected price list that the operator must keep current.
 
 ## Safety mitigations
-- Guardrails, filtering, human-in-the-loop, abstention behavior.
+
+- Deterministic, offline, reproducible; no network calls.
+- Lossless JSON export supports external auditing of traces.
 
 ## Environmental / cost footprint
-- Compute used; approximate cost / energy where relevant.
+
+Negligible; the library performs only in-memory bookkeeping.
