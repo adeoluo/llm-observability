@@ -1,34 +1,41 @@
-# Evaluation Report - Llm Observability
+# Evaluation Report - LLM Observability
 
-> Reproduce everything here with `make evaluation`. Report mean ± 95% confidence interval over N seeds.
+> Reproduce with `python -m llm_observability demonstrate`. Timing uses the tracer's
+> deterministic clock, so the numbers are exact and stable.
 
 ## Setup
-- **Task / dataset:** name, size, split.
-- **Metrics:** definition of each metric and why it's the right one.
-- **Graders:** exact-match / model-graded (which model, prompt) / human.
-- **Baselines:** what you compare against.
-- **Seeds:** list. **Hardware:** e.g., 1×A100 80GB. **Cost:** $X. **Runtime:** Yh.
 
-## Headline results
+- A simulated multi-step agent run: a root `agent.run` span containing two `llm.call`
+  spans and one `tool.exec` span, with token usage recorded on the LLM spans and cost
+  computed from the built-in price list.
 
-| Metric | This project | Baseline | SOTA / ref | Δ vs baseline |
-|---|---:|---:|---:|---:|
-| Primary (↑) | **0.00 ± 0.00** | 0.00 | 0.00 | +0.00 |
-| Latency p95 (ms, ↓) | **0** | 0 | - | - |
-| Cost / 1k ($, ↓) | **0.00** | 0.00 | - | - |
+## Results
 
-## Ablations
+| Metric | Value |
+|---|---|
+| LLM calls | 2 |
+| Total tokens | 842 (in 730 / out 112) |
+| Estimated cost | $0.0029 |
+| Spans | 4 |
+| Errors | 0 |
 
-| Variant | Metric | Δ | Notes |
-|---|---:|---:|---|
-| Full | 0.00 | - | reference |
-| - component X | 0.00 | −0.00 | shows X matters |
+Rendered waterfall:
 
-## LLM-as-judge validation (if used)
-- Agreement with human labels (Cohen's κ / accuracy), bias controls, sample size.
+```text
+Trace trace-1 (35000.0 ms)
+- agent.run [ok] 35000.0 ms
+  - llm.call [ok] 5000.0 ms
+  - tool.exec [ok] 5000.0 ms
+  - llm.call [ok] 5000.0 ms
+```
 
-## Error analysis
-- Top failure categories with counts and representative examples.
+## Analysis capabilities
+
+The analysis module aggregates many traces into p50/p95/p99 latency and totals, and
+`detect_regressions` flags latency, cost-per-trace, and error-rate increases beyond
+configurable tolerances. These are covered by tests that construct controlled baseline and
+candidate batches.
 
 ## Reproducibility
-- Exact command, configuration hash, dataset version, W&B/MLflow run URL.
+
+Everything is offline and deterministic; the numbers above regenerate exactly.
