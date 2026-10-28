@@ -44,13 +44,35 @@ percentiles and flags regressions. Traces render as a **waterfall tree** or seri
 
 - **Tracing** - `Span`, a `Trace` tree reconstructed from parent ids, and a context-managed
   `Tracer` that handles nesting and sets an ERROR status automatically on exceptions.
+  Spans also carry timestamped **events**, and the `@instrument` decorator auto-traces a
+  function.
+- **Sampling** - `AlwaysSampler` and a deterministic `RatioSampler` (hash the trace id) to
+  keep a stable fraction of traces in high-volume settings.
 - **Cost** - `PriceList` maps models to per-million-token prices; `estimate_cost` turns
   token counts into dollars.
 - **Metrics** - `record_llm_call` annotates a span; `aggregate_metrics` sums tokens, cost,
   latency, calls, and errors across a trace.
-- **Analysis** - `summarize_batch` (p50/p95/p99 latency, totals) and `detect_regressions`
-  (latency, cost-per-trace, and error-rate alerts between a baseline and a candidate).
-- **Exporters** - waterfall tree rendering and lossless JSON serialization.
+- **Analysis** - `summarize_batch` (p50/p95/p99 latency, totals), `detect_regressions`
+  (latency, cost, and error-rate alerts), and `diff_traces` (before/after structural and
+  timing delta).
+- **Alerting and SLOs** - a rule engine (`AlertEngine` with cost/latency/token/error
+  rules) and `evaluate_slo` with an error-budget readout.
+- **Search** - `search_spans` filters spans across traces by name, status, duration, and
+  attributes.
+- **Exporters** - waterfall tree rendering, lossless JSON, the Chrome Trace format
+  (loadable in `chrome://tracing` / Perfetto), and CSV.
+
+## Performance
+
+> Measured with `uv run python benchmarks/benchmark.py`.
+
+| Operation | Throughput |
+|---|---:|
+| Span create + finish (with attribute) | ~194,000 spans / sec |
+| Batch aggregation into metrics | ~604,000 traces / sec |
+
+Tracing overhead is a few microseconds per span, so instrumenting a full agent run is
+effectively free relative to the model calls it measures.
 
 ## Demonstration
 
