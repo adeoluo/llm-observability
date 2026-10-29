@@ -8,39 +8,46 @@ config:
     primaryBorderColor: "#1E293B"
     primaryTextColor: "#1E293B"
     lineColor: "#64748B"
-    clusterBkg: "#E2E8F0"
+    clusterBkg: "#EEF2FF"
     clusterBorder: "#94A3B8"
 ---
-flowchart LR
+flowchart TB
+    classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
-    classDef external fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    App([Instrumented app]):::external
+    Client([Instrumented application]):::edge
 
-    subgraph Tracing["Tracing"]
-        Tracer[Tracer]:::core
-        Span[Spans]:::core
-        Trace[Trace tree]:::core
+    subgraph Edge["Service layer (stdlib HTTP, stateless)"]
+        direction TB
+        Router["Router<br/>GET /health | POST /summarize"]:::core
+        Validate["Validation<br/>bound: batch size, required fields"]:::control
     end
 
-    subgraph Processing["Processing"]
-        Cost[Cost model]:::core
-        Metrics[Metrics aggregation]:::core
-        Analysis[Batch analysis]:::core
+    subgraph Tracing["Tracing primitives"]
+        direction TB
+        Spans["Spans to traces<br/>timed, typed, nested"]:::core
+        Record["record_llm_call<br/>model, tokens, cost"]:::core
     end
 
-    subgraph Output["Output"]
-        Tree[Waterfall tree]:::core
-        Json[(JSON export)]:::data
+    subgraph Analyze["Aggregation and evaluation"]
+        direction TB
+        Metrics["Metrics<br/>tokens, cost, errors"]:::core
+        Percentiles["Latency percentiles<br/>p50, p95, p99"]:::core
+        Slo["SLO evaluation<br/>compliance, error budget"]:::core
     end
 
-    App -->|with span| Tracer
-    Tracer --> Span
-    Span --> Trace
-    Trace --> Metrics
-    Cost --> Metrics
-    Trace --> Tree
-    Trace --> Json
-    Metrics --> Analysis
-    Analysis -.->|regression alerts| App
+    Prices[(Model price list)]:::data
+    Report["Batch summary + SLO report"]:::obs
+
+    Client -->|call records| Router --> Validate
+    Validate -->|records| Spans --> Record
+    Prices -.->|per-token cost| Record
+    Record --> Metrics
+    Metrics --> Percentiles
+    Metrics --> Slo
+    Percentiles --> Report
+    Slo --> Report
+    Report --> Router -->|JSON response| Client
