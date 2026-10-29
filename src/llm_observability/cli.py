@@ -37,7 +37,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     prices_parser = subparsers.add_parser("prices", help="List built-in model prices.")
     prices_parser.set_defaults(handler=_handle_prices)
+
+    serve_parser = subparsers.add_parser("serve", help="Start the HTTP observability service.")
+    serve_parser.add_argument("--host", default="127.0.0.1", help="Bind host.")
+    serve_parser.add_argument("--port", type=int, default=8000, help="Bind port.")
+    serve_parser.set_defaults(handler=_handle_serve)
     return parser
+
+
+def _handle_serve(args: argparse.Namespace) -> int:
+    from llm_observability.service import serve
+
+    serve(host=args.host, port=args.port)
+    return 0
 
 
 def _handle_demo(_: argparse.Namespace) -> int:
