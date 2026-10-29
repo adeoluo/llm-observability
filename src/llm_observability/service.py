@@ -15,6 +15,7 @@ Endpoints
 from __future__ import annotations
 
 import json
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -25,6 +26,7 @@ from llm_observability.core.span import Span, SpanStatus
 from llm_observability.core.trace import Trace
 from llm_observability.cost import PriceList
 from llm_observability.metrics import record_llm_call
+from llm_observability.observability import ServiceMetrics
 from llm_observability.slo import evaluate_slo
 
 JsonObject = dict[str, Any]
@@ -36,6 +38,7 @@ class ObservabilityService:
     """Builds traces from call records and computes metrics and SLOs."""
 
     prices: PriceList = field(default_factory=PriceList)
+    metrics: ServiceMetrics = field(default_factory=ServiceMetrics)
 
     def _trace_from_call(self, index: int, call: Mapping[str, Any]) -> Trace:
         latency_ms = float(call["latency_ms"])
@@ -107,11 +110,9 @@ def _validate_summarize(
     return calls, (float(threshold) if threshold is not None else None), float(objective)
 
 
-def handle(
+def _route(
     method: str, path: str, body: Mapping[str, Any], service: ObservabilityService
 ) -> tuple[int, JsonObject]:
-    """Pure request handler: route a request to a status code and payload."""
-
     if method == "GET" and path == "/health":
         return 200, {"status": "ok", "models": service.prices.model_names()}
     if method == "POST" and path == "/summarize":
@@ -121,6 +122,21 @@ def handle(
             return 400, {"error": str(error)}
         return 200, service.summarize(calls, slo_threshold_ms=threshold, slo_objective=objective)
     return 404, {"error": f"no route for {method} {path}"}
+
+
+def handle(
+    method: str, path: str, body: Mapping[str, Any], service: ObservabilityService
+) -> tuple[int, JsonObject]:
+    """Route a request, recording per-route metrics, and return status and payload."""
+
+    if method == "GET" and path == "/ready":
+        return 200, {"status": "ready"}
+    start = time.perf_counter()
+    status, payload = _route(method, path, body, service)
+    service.metrics.observe(
+        f"{method} {path}", (time.perf_counter() - start) * 1000.0, error=status >= 400
+    )
+    return status, payload
 
 
 class _Handler(BaseHTTPRequestHandler):  # pragma: no cover - exercised over sockets
@@ -135,6 +151,14 @@ class _Handler(BaseHTTPRequestHandler):  # pragma: no cover - exercised over soc
         self.wfile.write(encoded)
 
     def do_GET(self) -> None:
+        if self.path == "/metrics":
+            body = self.service.metrics.render_prometheus().encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         status, payload = handle("GET", self.path, {}, self.service)
         self._respond(status, payload)
 
