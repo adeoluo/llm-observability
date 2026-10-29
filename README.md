@@ -125,6 +125,30 @@ print(metrics.format())
 - **Deterministic clock for reproducibility.** The tracer accepts a counter in place of the
   wall clock, so demonstrations and tests produce exact, stable numbers.
 
+## Running the service
+
+A dependency-free HTTP service ingests batches of LLM-call records and returns aggregate
+metrics and an optional latency SLO:
+
+```bash
+python -m llm_observability serve --port 8000
+
+curl localhost:8000/health
+curl -s -X POST localhost:8000/summarize -d '{
+  "calls": [{"model": "gpt-4o", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820}],
+  "slo_threshold_ms": 1000
+}'
+```
+
+`POST /summarize` returns total cost, tokens, error rate, the p50/p95/p99 latency
+distribution, and, when a threshold is given, an SLO report with the remaining error budget.
+A production-style stress benchmark (`uv run python benchmarks/stress.py`) reports ingest
+throughput and p50/p95/p99 handler latency; a single core ingests on the order of 160000
+call records per second in batches. The service is scaled with processes because the
+pure-Python aggregation is bound by the global interpreter lock. See the
+[operations guide](docs/OPERATIONS.md), the [scaling and tradeoffs](docs/SCALING.md)
+document, and the [case study](docs/CASE_STUDY.md) on measuring a model rollout.
+
 ## Responsible AI
 
 - **Model card:** [docs/MODEL_CARD.md](docs/MODEL_CARD.md)
