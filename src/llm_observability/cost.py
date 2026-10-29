@@ -47,6 +47,10 @@ class PriceList:
     def __contains__(self, model: str) -> bool:
         return model in self._prices
 
+    def model_names(self) -> list[str]:
+        """Return the names of all known models, sorted."""
+        return sorted(self._prices)
+
     def price_for(self, model: str) -> ModelPrice | None:
         """Return the price for ``model``, or ``None`` if unknown."""
         return self._prices.get(model)
