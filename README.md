@@ -147,6 +147,7 @@ throughput and p50/p95/p99 handler latency; a single core ingests on the order o
 call records per second in batches. The service is scaled with processes because the
 pure-Python aggregation is bound by the global interpreter lock. See the
 [operations guide](docs/OPERATIONS.md), the [scaling and tradeoffs](docs/SCALING.md)
+The service also exposes `GET /ready` (readiness) and `GET /metrics` (per-route request, error, and latency metrics in Prometheus text format).
 document, and the [case study](docs/CASE_STUDY.md) on measuring a model rollout.
 
 ## Responsible AI
@@ -170,5 +171,5 @@ document, and the [case study](docs/CASE_STUDY.md) on measuring a model rollout.
 
 ## License
 
-[MIT](LICENSE). Part of a 28-project artificial intelligence engineering portfolio by
+[MIT](LICENSE). Part of an artificial intelligence engineering portfolio by
 [adeoluo](https://github.com/adeoluo).
