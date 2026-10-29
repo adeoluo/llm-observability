@@ -16,6 +16,8 @@ LLM-call records and returns aggregate metrics and an optional latency SLO.
 | Method | Path | Body | Success |
 |---|---|---|---|
 | GET | `/health` | none | status and known model prices |
+| GET | `/ready` | none | readiness of the service |
+| GET | `/metrics` | none | per-route request, error, and latency metrics (Prometheus text) |
 | POST | `/summarize` | `{"calls": [...], "slo_threshold_ms"?, "slo_objective"?}` | cost, tokens, error rate, latency percentiles, SLO |
 
 Each call record needs `model`, `input_tokens`, `output_tokens`, and `latency_ms`, with an
