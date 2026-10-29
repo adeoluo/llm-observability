@@ -20,7 +20,7 @@
 You cannot improve what you cannot see. LLM applications are especially opaque: a single
 user request fans out into nested model calls, tool calls, and retrieval steps, each with
 its own latency, token usage, and dollar cost. This project builds the observability stack
-for that world **from first principles** - spans, a trace tree, cost modeling, metric
+for that world **from scratch** - spans, a trace tree, cost modeling, metric
 aggregation, and regression detection - with **zero runtime dependencies** and a fully
 deterministic, offline test suite.
 
