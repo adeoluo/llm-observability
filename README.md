@@ -74,6 +74,25 @@ percentiles and flags regressions. Traces render as a **waterfall tree** or seri
 Tracing overhead is a few microseconds per span, so instrumenting a full agent run is
 effectively free relative to the model calls it measures.
 
+### Scale
+
+To check how analysis holds up as trace volume grows, `benchmarks/scale.py` ingests
+increasing batches of synthetic traces and measures `summarize_batch` throughput, a span
+`search_spans` query across the whole batch, and peak memory (the aggregation and query
+allocations, via the standard-library `tracemalloc`). The data is synthetic and the
+numbers are environment-specific, but the shape is the point: aggregation throughput stays
+roughly flat, memory and span count grow linearly, and query latency grows with the number
+of spans scanned.
+
+| Traces | Aggregation (s) | Throughput (traces/s) | Peak memory (MiB) | Spans | Query (ms) |
+|---:|---:|---:|---:|---:|---:|
+| 5,000 | 0.157 | ~31,800 | 1.03 | 10,000 | 15.41 |
+| 15,000 | 0.544 | ~27,600 | 3.08 | 30,000 | 61.70 |
+| 30,000 | 1.082 | ~27,700 | 6.17 | 60,000 | 100.04 |
+| 60,000 | 3.040 | ~19,700 | 12.35 | 120,000 | 310.90 |
+
+Reproduce with `uv run python benchmarks/scale.py`.
+
 ## Demonstration
 
 Fully offline and deterministic, via `python -m llm_observability demonstrate`:
