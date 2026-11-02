@@ -1,10 +1,11 @@
 cff-version: 1.2.0
 message: "If you use this work, please cite it."
-title: "Llm Observability"
+title: "LLM Observability"
+abstract: "LLM observability and tracing with a Python tracing library, collector, and JSON API, and a TypeScript trace dashboard."
 authors:
   - family-names: "Ogunnoiki"
     given-names: "Adeolu"
-version: 0.1.0
-date-released: 2026-01-01
+version: 0.2.0
+date-released: 2026-11-01
 license: MIT
 url: "https://github.com/adeoluo/llm-observability"

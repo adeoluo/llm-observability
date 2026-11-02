@@ -54,6 +54,34 @@ jobs:
           name: coverage
           path: coverage.xml
 
+  web:
+    name: web (typecheck, test, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check (tsc)
+        run: npm run typecheck
+
+      - name: Test (vitest)
+        run: npm test
+
+      - name: Build (vite)
+        run: npm run build
+
   build:
     name: build (package + image)
     runs-on: ubuntu-latest

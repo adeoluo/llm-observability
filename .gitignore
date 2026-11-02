@@ -32,3 +32,8 @@ checkpoints/
 .DS_Store
 .idea/
 .vscode/
+
+# Web dashboard
+web/node_modules/
+web/dist/
+web/coverage/
