@@ -23,7 +23,7 @@ Because aggregation is stateless and shared-nothing, throughput is linear in rep
 ## Substantial tradeoffs
 
 - **Stateless aggregation vs a durable time-series store.** Computing over the request batch
-  keeps the service simple, dependency-free, and horizontally trivial, at the cost of no
+  keeps the service simple and horizontally trivial, at the cost of no
   history; the caller owns retention. A durable store adds history and alerting over time at
   the cost of a dependency and operational surface. Ingest sits behind an interface for that.
 - **Exact percentiles vs streaming sketches.** Exact percentiles over a batch are simple and
@@ -33,7 +33,7 @@ Because aggregation is stateless and shared-nothing, throughput is linear in rep
 - **Built-in price list vs a live pricing feed.** A static price list is deterministic and
   offline but goes stale; a live feed is current at the cost of a dependency. Prices are a
   single structure to update or replace.
-- **Threads vs processes.** Aggregation is pure Python and GIL-bound, so processes, not
+- **Threads vs processes.** Aggregation is CPU bound and holds the GIL, so processes, not
   threads, are the unit of scaling. The service is stateless to make that trivial.
 
 ## What would change under real load
