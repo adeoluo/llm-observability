@@ -1,0 +1,48 @@
+# LLM Observability
+
+> LLM tracing with a Python library and collector service, a JSON API, and a TypeScript dashboard for traces, latency, tokens, and cost.
+
+Languages: Python, TypeScript. License: MIT. Source: https://github.com/adeoluo/llm-observability
+
+## Docs
+
+- [README](https://github.com/adeoluo/llm-observability/blob/main/README.md): motivation, architecture, results, quickstart, usage, design decisions, testing, responsible ai, limitations, roadmap
+- [AGENTS.md](https://github.com/adeoluo/llm-observability/blob/main/AGENTS.md): layout, commands and conventions for changing the code
+- [Architecture diagram](https://github.com/adeoluo/llm-observability/blob/main/docs/architecture/architecture.mmd): Mermaid source of the component diagram
+- [End-to-End Case Study - Measuring a Model Rollout](https://github.com/adeoluo/llm-observability/blob/main/docs/CASE_STUDY.md)
+- [Data Card - LLM Observability](https://github.com/adeoluo/llm-observability/blob/main/docs/DATA_CARD.md)
+- [Definition of Done](https://github.com/adeoluo/llm-observability/blob/main/docs/DEFINITION_OF_DONE.md)
+- [Evaluation Report - LLM Observability](https://github.com/adeoluo/llm-observability/blob/main/docs/EVALUATION_REPORT.md)
+- [System Card - LLM Observability](https://github.com/adeoluo/llm-observability/blob/main/docs/MODEL_CARD.md)
+- [Operations Guide - LLM Observability](https://github.com/adeoluo/llm-observability/blob/main/docs/OPERATIONS.md)
+- [Scaling and Design Tradeoffs - LLM Observability](https://github.com/adeoluo/llm-observability/blob/main/docs/SCALING.md)
+- [Threat Model - LLM Observability](https://github.com/adeoluo/llm-observability/blob/main/docs/THREAT_MODEL.md)
+- [ADR-0001: Record architecture decisions](https://github.com/adeoluo/llm-observability/blob/main/docs/adr/0001-record-architecture-decisions.md)
+- [ADR-0002: Context-managed spans with a context variable](https://github.com/adeoluo/llm-observability/blob/main/docs/adr/0002-context-managed-spans.md)
+- [ADR-0003: An injected cost model](https://github.com/adeoluo/llm-observability/blob/main/docs/adr/0003-injected-cost-model.md)
+- [ADR-NNNN: <short title>](https://github.com/adeoluo/llm-observability/blob/main/docs/adr/template.md)
+- [Changelog](https://github.com/adeoluo/llm-observability/blob/main/CHANGELOG.md): release history
+
+## Source
+
+- [src/llm_observability/__init__.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/__init__.py): LLM Observability: tracing, metrics, a collector service, and a JSON API for a web dashboard.
+- [src/llm_observability/alerts.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/alerts.py): An alerting rules engine over trace metrics.
+- [src/llm_observability/analysis.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/analysis.py): Analysis over many traces: summaries, percentiles, and regression detection.
+- [src/llm_observability/cli.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/cli.py): Command-line interface for the observability platform.
+- [src/llm_observability/core/__init__.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/core/__init__.py): Core tracing abstractions.
+- [src/llm_observability/core/span.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/core/span.py): Core span types for tracing.
+- [src/llm_observability/core/trace.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/core/trace.py): The :class:`Trace`: the tree of spans from one top-level operation.
+- [src/llm_observability/core/tracer.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/core/tracer.py): The :class:`Tracer`: creates spans and maintains the parent/child context.
+- [src/llm_observability/cost.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/cost.py): LLM cost modeling.
+- [src/llm_observability/demo.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/demo.py): A worked example: instrumenting a simulated agent run.
+- [src/llm_observability/diff.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/diff.py): Diffing two traces of the same operation.
+- [src/llm_observability/exporters.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/exporters.py): Exporters: render and serialize traces.
+- [src/llm_observability/formats.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/formats.py): Additional export formats: Chrome trace, CSV, and span-flattening.
+- [src/llm_observability/instrumentation.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/instrumentation.py): Decorator-based auto-instrumentation.
+- [src/llm_observability/metrics.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/metrics.py): Conventions for recording LLM calls on spans, and metric aggregation.
+- [src/llm_observability/observability.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/observability.py): In-process request metrics for the HTTP service.
+- [src/llm_observability/sampling.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/sampling.py): Trace sampling.
+- [src/llm_observability/search.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/search.py): Searching and filtering spans across traces.
+- [src/llm_observability/service.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/service.py): The HTTP service (collector and JSON API) built on the standard library.
+- [src/llm_observability/slo.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/slo.py): Service-level objective (SLO) tracking.
+- [src/llm_observability/store.py](https://github.com/adeoluo/llm-observability/blob/main/src/llm_observability/store.py): An in-memory trace store and the JSON views the dashboard reads.
