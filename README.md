@@ -1,68 +1,48 @@
 <h1 align="center">LLM Observability</h1>
 
 <p align="center">
-  <em>An LLM observability and tracing platform built from scratch: hierarchical spans, token / cost / latency metrics, and trace analysis.</em>
+  <em>LLM tracing with a Python library and collector service, a JSON API, and a TypeScript dashboard for traces, latency, tokens, and cost.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/adeoluo/llm-observability/actions/workflows/ci.yml"><img alt="Continuous integration" src="https://github.com/adeoluo/llm-observability/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Coverage" src="https://img.shields.io/badge/coverage-94%25-brightgreen">
+  <a href="https://github.com/adeoluo/llm-observability/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/llm-observability/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/adeoluo/llm-observability/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/llm-observability"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
-  <img alt="Type checked" src="https://img.shields.io/badge/mypy-strict-blue">
-  <img alt="Runtime dependencies" src="https://img.shields.io/badge/runtime%20deps-0-brightgreen">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <img alt="TypeScript" src="https://img.shields.io/badge/typescript-7-3178c6">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
 ---
 
 ## Motivation
 
-You cannot improve what you cannot see. LLM applications are especially opaque: a single
-user request fans out into nested model calls, tool calls, and retrieval steps, each with
-its own latency, token usage, and dollar cost. This project builds the observability stack
-for that world **from scratch** - spans, a trace tree, cost modeling, metric
-aggregation, and regression detection - with **zero runtime dependencies** and a fully
-deterministic, offline test suite.
+LLM applications are hard to see into. A single user request fans out into nested model
+calls, tool calls, and retrieval steps, each with its own latency, token usage, and dollar
+cost. This project provides the pieces needed to observe that: spans and a trace tree, cost
+modeling, metric aggregation, regression detection, a collector service, and a web
+dashboard for browsing what was recorded.
 
-The design follows OpenTelemetry's model (spans with parent/child structure) but is small
-enough to read in an afternoon, so the mechanics of tracing are transparent rather than
-hidden behind a vendor SDK.
+The tracing model follows OpenTelemetry (spans with parent and child structure) but stays
+small enough to read in an afternoon, so the mechanics of tracing are visible rather than
+hidden behind a vendor SDK. The Python test suite is deterministic and runs offline.
 
 ## Architecture
 
 <p align="center">
-  <img src="docs/architecture/architecture.svg" alt="System architecture" width="860">
+  <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
-An instrumented application opens **spans** through the **Tracer**'s context manager; spans
-nest automatically into a **trace tree**. The **cost model** and **metrics** layer turn
-span attributes into tokens, dollars, and latency; **analysis** aggregates many traces into
-percentiles and flags regressions. Traces render as a **waterfall tree** or serialize to
-**JSON**. See the [ADRs](docs/adr/) for key choices.
+An instrumented application opens spans through the Python `Tracer`; spans nest into a
+trace tree and carry model, token, and cost attributes. Traces are posted as JSON to the
+Python collector, which keeps them in a bounded in-memory store. The analysis layer turns
+stored traces into cost, token, error, and latency percentile figures, and a read-only JSON
+API serves trace lists, trace details, and summaries. The TypeScript dashboard, built with
+Vite and served by the same Python process at `/ui`, reads only that API. See the
+[ADRs](docs/adr/) for key choices.
 
-## Components
+## Results
 
-- **Tracing** - `Span`, a `Trace` tree reconstructed from parent ids, and a context-managed
-  `Tracer` that handles nesting and sets an ERROR status automatically on exceptions.
-  Spans also carry timestamped **events**, and the `@instrument` decorator auto-traces a
-  function.
-- **Sampling** - `AlwaysSampler` and a deterministic `RatioSampler` (hash the trace id) to
-  keep a stable fraction of traces in high-volume settings.
-- **Cost** - `PriceList` maps models to per-million-token prices; `estimate_cost` turns
-  token counts into dollars.
-- **Metrics** - `record_llm_call` annotates a span; `aggregate_metrics` sums tokens, cost,
-  latency, calls, and errors across a trace.
-- **Analysis** - `summarize_batch` (p50/p95/p99 latency, totals), `detect_regressions`
-  (latency, cost, and error-rate alerts), and `diff_traces` (before/after structural and
-  timing delta).
-- **Alerting and SLOs** - a rule engine (`AlertEngine` with cost/latency/token/error
-  rules) and `evaluate_slo` with an error-budget readout.
-- **Search** - `search_spans` filters spans across traces by name, status, duration, and
-  attributes.
-- **Exporters** - waterfall tree rendering, lossless JSON, the Chrome Trace format
-  (loadable in `chrome://tracing` / Perfetto), and CSV.
-
-## Performance
+### Performance
 
 > Measured with `uv run python benchmarks/benchmark.py`.
 
@@ -71,8 +51,8 @@ percentiles and flags regressions. Traces render as a **waterfall tree** or seri
 | Span create + finish (with attribute) | ~194,000 spans / sec |
 | Batch aggregation into metrics | ~604,000 traces / sec |
 
-Tracing overhead is a few microseconds per span, so instrumenting a full agent run is
-effectively free relative to the model calls it measures.
+Tracing overhead is a few microseconds per span, which is small relative to the model calls
+it measures.
 
 ### Scale
 
@@ -93,19 +73,12 @@ of spans scanned.
 
 Reproduce with `uv run python benchmarks/scale.py`.
 
-## Demonstration
+### Service throughput
 
-Fully offline and deterministic, via `python -m llm_observability demonstrate`:
-
-```text
-Trace trace-1 (35000.0 ms)
-- agent.run [ok] 35000.0 ms
-  - llm.call [ok] 5000.0 ms
-  - tool.exec [ok] 5000.0 ms
-  - llm.call [ok] 5000.0 ms
-
-2 calls, 842 tokens (in 730 / out 112), $0.0029, 35000.0 ms, 0 errors
-```
+A stress benchmark (`uv run python benchmarks/stress.py`) reports ingest throughput and
+p50/p95/p99 handler latency for `POST /summarize`; a single core ingests on the order of
+160000 call records per second in batches. See the [operations guide](docs/OPERATIONS.md)
+for the measured service level objectives.
 
 ## Quickstart
 
@@ -117,6 +90,32 @@ make all                      # lint + type-check + test
 python -m llm_observability demonstrate   # trace a simulated agent run
 python -m llm_observability prices        # list built-in model prices
 ```
+
+To see the dashboard with sample data (requires Node.js 22.12 or later):
+
+```bash
+(cd web && npm ci && npm run build)
+uv run python -m llm_observability serve --port 8000 --demo-traces 200
+# open http://localhost:8000/ui/
+```
+
+## Usage
+
+### Demonstration
+
+Offline and deterministic, via `python -m llm_observability demonstrate`:
+
+```text
+Trace trace-1 (35000.0 ms)
+- agent.run [ok] 35000.0 ms
+  - llm.call [ok] 5000.0 ms
+  - tool.exec [ok] 5000.0 ms
+  - llm.call [ok] 5000.0 ms
+
+2 calls, 842 tokens (in 730 / out 112), $0.0029, 35000.0 ms, 0 errors
+```
+
+### Library API
 
 Instrument your own code:
 
@@ -134,20 +133,32 @@ metrics = aggregate_metrics(tracer.traces()[0])
 print(metrics.format())
 ```
 
-## Design decisions
+The library is organized into these components:
 
-- **OpenTelemetry-style spans with a context variable.** Nesting is tracked implicitly, so
-  a whole call tree is instrumented with `with` blocks and no parent threading.
-  ([ADR-0002](docs/adr/0002-context-managed-spans.md))
-- **Injected prices, not hard-coded.** The cost model takes a `PriceList`, so pricing stays
-  current and testable. ([ADR-0003](docs/adr/0003-injected-cost-model.md))
-- **Deterministic clock for reproducibility.** The tracer accepts a counter in place of the
-  wall clock, so demonstrations and tests produce exact, stable numbers.
+- **Tracing**: `Span`, a `Trace` tree reconstructed from parent ids, and a context-managed
+  `Tracer` that handles nesting and sets an ERROR status automatically on exceptions.
+  Spans also carry timestamped events, and the `@instrument` decorator traces a function.
+- **Sampling**: `AlwaysSampler` and a deterministic `RatioSampler` (hash of the trace id)
+  to keep a stable fraction of traces in high-volume settings.
+- **Cost**: `PriceList` maps models to per-million-token prices; `estimate_cost` turns
+  token counts into dollars.
+- **Metrics**: `record_llm_call` annotates a span; `aggregate_metrics` sums tokens, cost,
+  latency, calls, and errors across a trace.
+- **Analysis**: `summarize_batch` (p50/p95/p99 latency, totals), `detect_regressions`
+  (latency, cost, and error-rate alerts), and `diff_traces` (structural and timing delta
+  between two traces).
+- **Alerting and SLOs**: a rule engine (`AlertEngine` with cost, latency, token, and error
+  rules) and `evaluate_slo` with an error-budget readout.
+- **Search**: `search_spans` filters spans across traces by name, status, duration, and
+  attributes.
+- **Exporters**: waterfall tree rendering, lossless JSON, the Chrome Trace format
+  (loadable in `chrome://tracing` or Perfetto), and CSV.
+- **Store**: a bounded, thread-safe `TraceStore` and the JSON views the API serves.
 
-## Running the service
+### HTTP service
 
-A dependency-free HTTP service ingests batches of LLM-call records and returns aggregate
-metrics and an optional latency SLO:
+The service is built on the Python standard library HTTP server. It collects traces,
+serves the JSON API and the dashboard, and summarizes ad hoc batches of call records:
 
 ```bash
 python -m llm_observability serve --port 8000
@@ -157,17 +168,110 @@ curl -s -X POST localhost:8000/summarize -d '{
   "calls": [{"model": "gpt-4o", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820}],
   "slo_threshold_ms": 1000
 }'
+
+# send traces to the collector (body format of POST /api/traces)
+python -m llm_observability sample-traces --count 50 --output traces.json
+curl -s -X POST localhost:8000/api/traces -d @traces.json
+curl -s 'localhost:8000/api/traces?status=error&min_latency_ms=1000'
+curl -s localhost:8000/api/summary
 ```
 
-`POST /summarize` returns total cost, tokens, error rate, the p50/p95/p99 latency
-distribution, and, when a threshold is given, an SLO report with the remaining error budget.
-A production-style stress benchmark (`uv run python benchmarks/stress.py`) reports ingest
-throughput and p50/p95/p99 handler latency; a single core ingests on the order of 160000
-call records per second in batches. The service is scaled with processes because the
-pure-Python aggregation is bound by the global interpreter lock. See the
-[operations guide](docs/OPERATIONS.md), the [scaling and tradeoffs](docs/SCALING.md)
-The service also exposes `GET /ready` (readiness) and `GET /metrics` (per-route request, error, and latency metrics in Prometheus text format).
-document, and the [case study](docs/CASE_STUDY.md) on measuring a model rollout.
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/traces` | ingest up to 1000 traces in the JSON form produced by `trace_to_dict` |
+| `GET /api/traces` | trace rows, newest first; filters `status`, `model`, `min_latency_ms`, `limit` |
+| `GET /api/traces/{id}` | one trace with its summary and every span |
+| `GET /api/summary` | totals, error rate, latency p50/p95/p99, and a per-model breakdown |
+| `POST /summarize` | cost, tokens, error rate, latency percentiles, and an optional SLO report |
+| `GET /health`, `GET /ready`, `GET /metrics` | liveness, readiness, Prometheus text metrics |
+| `GET /ui/` | the dashboard (static files from `web/dist`) |
+
+Aggregation is CPU bound and holds the global interpreter lock, so the service scales with
+processes. See the [operations guide](docs/OPERATIONS.md), the
+[scaling and tradeoffs](docs/SCALING.md) document, and the [case study](docs/CASE_STUDY.md)
+on measuring a model rollout.
+
+### Dashboard
+
+The dashboard in [`web/`](web/) is a single-page TypeScript application (strict mode,
+Preact for rendering, Vite for the build). It has three views:
+
+- **Traces**: the trace list with filters for status, model, and minimum latency. Filters
+  live in the URL, so a filtered view can be shared.
+- **Trace detail**: a nested span waterfall whose bar offsets and widths are proportional
+  to each span's start and duration, next to an attribute panel showing tokens, cost,
+  latency, self time, errors, and span events.
+- **Summary**: latency percentiles, a latency histogram, error rate, and cost and token
+  totals per model, drawn as SVG charts in plain code with no charting library.
+
+Run it against the Python service:
+
+```bash
+cd web
+npm ci
+npm run build                 # writes web/dist, served by the service at /ui
+cd ..
+uv run python -m llm_observability serve --port 8000 --demo-traces 200
+# open http://localhost:8000/ui/
+```
+
+For development, `npm run dev` in `web/` starts Vite with hot reload and proxies `/api` to
+the service at `http://127.0.0.1:8000` (override with `LLM_OBS_API`). `--demo-traces N`
+preloads N seeded sample traces (chat, retrieval, and agent runs across four models, with
+occasional provider errors and retries); `--ui-dir PATH` serves a build from another
+directory. The Docker image builds the dashboard and serves it on port 8000.
+
+<p align="center">
+  <img src="docs/images/dashboard.png" alt="Trace list in the dashboard" width="860">
+</p>
+
+<p align="center">
+  <img src="docs/images/dashboard-trace.png" alt="Trace detail with span waterfall and attribute panel" width="860">
+</p>
+
+<p align="center">
+  <img src="docs/images/dashboard-summary.png" alt="Summary view with latency percentiles, cost, and tokens" width="860">
+</p>
+
+## Design decisions
+
+- **OpenTelemetry-style spans with a context variable.** Nesting is tracked implicitly, so
+  a whole call tree is instrumented with `with` blocks and no parent threading.
+  ([ADR-0002](docs/adr/0002-context-managed-spans.md))
+- **Injected prices, not hard-coded.** The cost model takes a `PriceList`, so pricing stays
+  current and testable. ([ADR-0003](docs/adr/0003-injected-cost-model.md))
+- **Deterministic clock for reproducibility.** The tracer accepts a counter in place of the
+  wall clock, so demonstrations and tests produce exact, stable numbers.
+- **The dashboard depends only on the JSON API.** The service computes every summary; the
+  TypeScript client validates each response at the boundary and keeps layout math
+  (waterfall positions, axis ticks, chart geometry) in pure functions that are unit tested
+  without a browser.
+- **One process serves the API and the UI.** The built dashboard is static files under
+  `/ui`, so there is no separate web server to deploy and no cross-origin setup.
+
+## Testing
+
+```bash
+make all                                  # ruff format check, ruff lint, mypy, pytest with coverage gate
+uv run pytest --cov=src --cov-fail-under=80
+
+cd web
+npm run typecheck                         # tsc --noEmit (strict)
+npm test                                  # vitest
+npm run build
+```
+
+- **Python (pytest, 108 tests):** tracing primitives, cost and metrics, exporters,
+  analysis, alerting and SLOs, search, sampling, the CLI, the service handler for every
+  route (including filters, validation errors, and 404s), the trace store (eviction,
+  replacement, summaries), safe static file resolution for `/ui`, and the sample-trace
+  generator. Coverage is gated at 80 percent in continuous integration.
+- **TypeScript (vitest, 54 tests):** waterfall layout math (ordering, proportional
+  offsets and widths, self time, open and orphan spans, parent cycles, axis ticks),
+  formatting of durations, costs, tokens, and percentages, API client parsing and error
+  handling with a stubbed `fetch`, hash routing, and chart geometry.
+- Continuous integration runs the Python job on 3.11 and 3.12, a `web` job (`npm ci`,
+  type check, tests, build), and a package and Docker image build.
 
 ## Responsible AI
 
@@ -177,18 +281,21 @@ document, and the [case study](docs/CASE_STUDY.md) on measuring a model rollout.
 
 ## Limitations
 
-- In-memory tracing suited to a single process; distributed trace propagation across
-  services is out of scope (a roadmap item).
+- Tracing is in memory and suited to a single process; distributed trace propagation
+  across services is out of scope (a roadmap item).
+- The collector's trace store is in memory and bounded (oldest traces are evicted); it is
+  not durable across restarts.
+- The service has no authentication; run it on a trusted network or behind a proxy.
 - Cost figures are estimates from an injected price list, not billed amounts.
 - Token counts are recorded by the caller; this project does not tokenize text itself.
 
 ## Roadmap
 
 - [ ] Cross-process trace context propagation
-- [ ] A live metrics endpoint and a web dashboard
+- [ ] A durable trace store behind the existing store interface
 - [ ] Sampling for high-volume production traffic
+- [ ] Time-window charts on the dashboard summary
 
 ## License
 
-[MIT](LICENSE). Part of an artificial intelligence engineering portfolio by
-[adeoluo](https://github.com/adeoluo).
+Released under the [MIT License](LICENSE).

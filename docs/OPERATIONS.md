@@ -8,8 +8,11 @@ The operational contract of the observability service.
 uv run python -m llm_observability serve --host 0.0.0.0 --port 8000
 ```
 
-A standard-library HTTP server with **zero runtime dependencies**. It ingests batches of
-LLM-call records and returns aggregate metrics and an optional latency SLO.
+A standard-library HTTP server. It ingests batches of LLM-call records and returns aggregate
+metrics and an optional latency SLO, collects full traces into a bounded in-memory store,
+serves read-only JSON views of them, and serves the built TypeScript dashboard at `/ui/`.
+Add `--demo-traces 200` to preload generated sample traces, and `--ui-dir PATH` to point at
+a dashboard build other than `web/dist`.
 
 ## Endpoints
 
@@ -19,6 +22,11 @@ LLM-call records and returns aggregate metrics and an optional latency SLO.
 | GET | `/ready` | none | readiness of the service |
 | GET | `/metrics` | none | per-route request, error, and latency metrics (Prometheus text) |
 | POST | `/summarize` | `{"calls": [...], "slo_threshold_ms"?, "slo_objective"?}` | cost, tokens, error rate, latency percentiles, SLO |
+| POST | `/api/traces` | `{"traces": [<trace JSON>, ...]}` (up to 1000) | 201 with ingested and stored counts |
+| GET | `/api/traces` | query `status`, `model`, `min_latency_ms`, `limit` | matching trace rows, newest first |
+| GET | `/api/traces/{id}` | none | trace summary and all spans (404 if unknown) |
+| GET | `/api/summary` | none | totals, error rate, latency percentiles, per-model breakdown |
+| GET | `/ui/` | none | the dashboard (static files from `web/dist`) |
 
 Each call record needs `model`, `input_tokens`, `output_tokens`, and `latency_ms`, with an
 optional `error` flag. Errors return JSON `{"error": ...}` with a 4xx status.
