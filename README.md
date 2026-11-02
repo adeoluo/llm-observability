@@ -238,6 +238,22 @@ directory. The Docker image builds the dashboard and serves it on port 8000.
   <img src="docs/images/dashboard-summary.png" alt="Summary view with latency percentiles, cost, and tokens" width="860">
 </p>
 
+### Demos
+
+Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
+
+A traced agent run: spans, token counts, and cost.
+
+<p align="center">
+  <img src="docs/demo/demonstrate.gif" alt="A traced agent run: spans, token counts, and cost" width="860">
+</p>
+
+The price table used for cost attribution.
+
+<p align="center">
+  <img src="docs/demo/prices.gif" alt="The price table used for cost attribution" width="860">
+</p>
+
 ## Design decisions
 
 - **OpenTelemetry-style spans with a context variable.** Nesting is tracked implicitly, so
