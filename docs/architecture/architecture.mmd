@@ -5,56 +5,42 @@ flowchart LR
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    App(["Instrumented LLM app"]):::edge
-    Engineer(["Engineer<br/>browser"]):::edge
-    Cli(["CLI<br/>serve, demonstrate,<br/>sample-traces"]):::edge
-
-    subgraph Lib["Instrumentation (Python library)"]
+    subgraph Clients["Clients"]
         direction TB
-        Sampler["Samplers<br/>always, ratio"]:::control
-        Tracer["Tracer and spans<br/>@instrument decorator"]:::core
-        LlmCall["record_llm_call<br/>model, tokens, cost"]:::core
-        Export["Exporters<br/>JSON, tree, Chrome, CSV"]:::obs
+        App(["Instrumented LLM app"]):::edge
+        Tracer["Tracer and spans<br/>@instrument, samplers"]:::core
+        Engineer(["Engineer in browser"]):::edge
+        Pages["Preact dashboard<br/>TypeScript, /ui"]:::core
+        ApiClient["api.ts client<br/>response shape checks"]:::control
+        App --> Tracer ~~~ Engineer --> Pages --> ApiClient
     end
 
-    subgraph Ui["Dashboard (TypeScript web/)"]
+    subgraph Service["Collector service"]
         direction TB
-        Pages["Preact pages at /ui<br/>trace list, waterfall,<br/>summary"]:::core
-        Client["api.ts client<br/>response shape checks"]:::control
+        Cli(["CLI<br/>serve, sample-traces"]):::edge
+        Router["HTTP router<br/>/api/traces, /summary"]:::core
+        Validate["Validation<br/>batch limits, filters"]:::control
+        Analysis["Analysis<br/>cost, tokens, p50 to p99"]:::core
+        Cli --> Router --> Validate --> Analysis
     end
 
-    subgraph Svc["Collector service (stdlib HTTP)"]
+    subgraph State["Data and state"]
         direction TB
-        Http["Request router<br/>/api/traces, /api/summary,<br/>/summarize"]:::core
-        Validate["Request validation<br/>batch limits, filters"]:::control
-        Analysis["Analysis<br/>cost, tokens, p50/p95/p99"]:::core
-    end
-
-    subgraph State["Data and state (in memory)"]
-        direction TB
-        Store[("TraceStore<br/>bounded, thread-safe")]:::data
-        Prices[("PriceList<br/>USD per million tokens")]:::data
+        Store[("TraceStore<br/>bounded, in memory")]:::data
+        Prices[("PriceList<br/>USD per 1M tokens")]:::data
+        Store ~~~ Prices
     end
 
     subgraph Obs["Observability and outputs"]
         direction TB
+        Views["JSON views<br/>list, detail, summary"]:::obs
         Slo["SLO evaluation<br/>latency objective"]:::obs
-        Metrics["/metrics<br/>Prometheus counts, latency"]:::obs
+        Export["Exporters<br/>JSON, Chrome, CSV"]:::obs
+        Metrics["/metrics<br/>Prometheus text"]:::obs
+        Views ~~~ Slo ~~~ Export ~~~ Metrics
     end
 
-    App -->|spans| Tracer
-    Sampler -.-> Tracer
-    LlmCall -.-> Tracer
-    Tracer --> Export
-    Export -->|POST trace JSON| Http
-    Engineer --> Pages
-    Pages --> Client
-    Client -->|fetch /api| Http
-    Cli -->|serve| Http
-    Http -.-> Validate
-    Http -->|ingest| Store
-    Http --> Analysis
-    Store -.-> Analysis
-    Prices -.-> Analysis
-    Analysis --> Slo
-    Http -.->|timings| Metrics
+    Clients -->|trace JSON, fetch /api| Service
+    Service -->|ingest| State
+    State -.->|traces, prices| Service
+    Service -->|summaries, timings| Obs
