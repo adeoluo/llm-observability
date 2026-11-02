@@ -32,13 +32,18 @@ hidden behind a vendor SDK. The Python test suite is deterministic and runs offl
   <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
-An instrumented application opens spans through the Python `Tracer`; spans nest into a
-trace tree and carry model, token, and cost attributes. Traces are posted as JSON to the
-Python collector, which keeps them in a bounded in-memory store. The analysis layer turns
-stored traces into cost, token, error, and latency percentile figures, and a read-only JSON
-API serves trace lists, trace details, and summaries. The TypeScript dashboard, built with
-Vite and served by the same Python process at `/ui`, reads only that API. See the
-[ADRs](docs/adr/) for key choices.
+<sub>Legend: amber = entry points and external systems, indigo = core logic, green = data and state, blue = validation and control, grey = observability and outputs.</sub>
+
+An instrumented application opens spans through the Python `Tracer` (directly or with the
+`@instrument` decorator), and an optional sampler decides which traces to keep. Spans nest
+into a trace tree and carry model, token, and cost attributes; exporters serialize the tree to
+JSON (or a text tree, Chrome trace, or CSV). Traces are posted to the standard-library HTTP
+collector, which validates each request and keeps traces in a bounded in-memory store. The
+analysis layer combines stored traces with the model price list to produce cost, token,
+error, and latency percentile figures, with an optional SLO check. The TypeScript dashboard,
+built with Vite and Preact and served by the same Python process at `/ui`, reads only the
+JSON API, and `/metrics` exposes per-route request counts and latency in Prometheus format.
+See the [ADRs](docs/adr/) for key choices.
 
 ## Results
 

@@ -1,26 +1,57 @@
-flowchart LR
+flowchart TD
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
-    classDef web      fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    App(["Instrumented app"]):::edge
-    Tracer["Tracer and spans<br/>Python library"]:::core
+    App(["Instrumented LLM app"]):::edge
+    Cli(["CLI<br/>serve, demonstrate, sample-traces"]):::edge
+    Engineer(["Engineer<br/>browser"]):::edge
 
-    subgraph Service["Python collector and service"]
+    subgraph Lib["Instrumentation (Python library)"]
         direction TB
-        Collector["Collector<br/>POST /api/traces"]:::core
-        Store[("Trace store<br/>in memory, bounded")]:::data
-        Analysis["Analysis<br/>cost, tokens, p50/p95/p99"]:::core
-        Api["JSON API<br/>/api/traces, /api/summary"]:::core
+        Tracer["Tracer and spans<br/>@instrument decorator"]:::core
+        LlmCall["record_llm_call<br/>model, tokens, cost attributes"]:::core
+        Sampler["Samplers<br/>always, ratio by trace id"]:::control
+        Export["Exporters<br/>JSON, tree, Chrome trace, CSV"]:::obs
     end
 
-    Prices[("Model price list")]:::data
-    Dashboard["TypeScript dashboard<br/>served at /ui"]:::web
-    User(["Engineer"]):::edge
+    subgraph Svc["Collector service (stdlib HTTP)"]
+        direction TB
+        Http["Request router<br/>/api/traces, /api/summary, /summarize"]:::core
+        Validate["Request validation<br/>batch limits, filter parsing"]:::control
+        Analysis["Analysis<br/>cost, tokens, p50, p95, p99"]:::core
+        Slo["SLO evaluation<br/>latency objective"]:::obs
+    end
 
-    App --> Tracer -->|trace JSON| Collector --> Store
-    Prices -.-> Analysis
-    Store --> Analysis --> Api
-    Store --> Api
-    Api -->|fetch| Dashboard --> User
+    subgraph State["Data and state (in memory)"]
+        direction TB
+        Store[("TraceStore<br/>bounded, thread-safe")]:::data
+        Prices[("PriceList<br/>USD per million tokens")]:::data
+    end
+
+    subgraph Ui["Dashboard and outputs (TypeScript web/ and /metrics)"]
+        direction TB
+        Client["api.ts client<br/>response shape checks"]:::control
+        Pages["Preact pages at /ui<br/>trace list, waterfall, summary"]:::core
+        Metrics["/metrics<br/>Prometheus request counts, latency"]:::obs
+    end
+
+    App -->|opens spans| Tracer
+    Tracer --> LlmCall
+    Sampler -.->|keep or drop| Tracer
+    Tracer -->|trace tree| Export
+    Export -->|POST trace JSON| Http
+    Cli -->|serve| Http
+    Http --> Validate
+    Validate -->|ingest| Store
+    Validate -->|call batch| Analysis
+    Store -.->|stored traces| Analysis
+    Prices -.->|token prices| Analysis
+    Analysis --> Slo
+    Analysis -->|summary JSON| Client
+    Store -.->|list and detail views| Client
+    Client --> Pages
+    Pages -->|views traces| Engineer
+    Http -.->|per-route timings| Metrics
