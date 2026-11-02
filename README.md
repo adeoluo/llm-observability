@@ -254,6 +254,12 @@ The price table used for cost attribution.
   <img src="docs/demo/prices.gif" alt="The price table used for cost attribution" width="860">
 </p>
 
+The collector: ingest 50 sample traces, filter slow errors, and summarize latency and cost by model.
+
+<p align="center">
+  <img src="docs/demo/http.gif" alt="The collector: ingest 50 sample traces, filter slow errors, and summarize latency and cost by model" width="860">
+</p>
+
 ## Design decisions
 
 - **OpenTelemetry-style spans with a context variable.** Nesting is tracked implicitly, so
