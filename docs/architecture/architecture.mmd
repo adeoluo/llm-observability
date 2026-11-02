@@ -1,4 +1,4 @@
-flowchart TD
+flowchart LR
     classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
     classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
@@ -6,23 +6,28 @@ flowchart TD
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
     App(["Instrumented LLM app"]):::edge
-    Cli(["CLI<br/>serve, demonstrate, sample-traces"]):::edge
     Engineer(["Engineer<br/>browser"]):::edge
+    Cli(["CLI<br/>serve, demonstrate,<br/>sample-traces"]):::edge
 
     subgraph Lib["Instrumentation (Python library)"]
         direction TB
+        Sampler["Samplers<br/>always, ratio"]:::control
         Tracer["Tracer and spans<br/>@instrument decorator"]:::core
-        LlmCall["record_llm_call<br/>model, tokens, cost attributes"]:::core
-        Sampler["Samplers<br/>always, ratio by trace id"]:::control
-        Export["Exporters<br/>JSON, tree, Chrome trace, CSV"]:::obs
+        LlmCall["record_llm_call<br/>model, tokens, cost"]:::core
+        Export["Exporters<br/>JSON, tree, Chrome, CSV"]:::obs
+    end
+
+    subgraph Ui["Dashboard (TypeScript web/)"]
+        direction TB
+        Pages["Preact pages at /ui<br/>trace list, waterfall,<br/>summary"]:::core
+        Client["api.ts client<br/>response shape checks"]:::control
     end
 
     subgraph Svc["Collector service (stdlib HTTP)"]
         direction TB
-        Http["Request router<br/>/api/traces, /api/summary, /summarize"]:::core
-        Validate["Request validation<br/>batch limits, filter parsing"]:::control
-        Analysis["Analysis<br/>cost, tokens, p50, p95, p99"]:::core
-        Slo["SLO evaluation<br/>latency objective"]:::obs
+        Http["Request router<br/>/api/traces, /api/summary,<br/>/summarize"]:::core
+        Validate["Request validation<br/>batch limits, filters"]:::control
+        Analysis["Analysis<br/>cost, tokens, p50/p95/p99"]:::core
     end
 
     subgraph State["Data and state (in memory)"]
@@ -31,27 +36,25 @@ flowchart TD
         Prices[("PriceList<br/>USD per million tokens")]:::data
     end
 
-    subgraph Ui["Dashboard and outputs (TypeScript web/ and /metrics)"]
+    subgraph Obs["Observability and outputs"]
         direction TB
-        Client["api.ts client<br/>response shape checks"]:::control
-        Pages["Preact pages at /ui<br/>trace list, waterfall, summary"]:::core
-        Metrics["/metrics<br/>Prometheus request counts, latency"]:::obs
+        Slo["SLO evaluation<br/>latency objective"]:::obs
+        Metrics["/metrics<br/>Prometheus counts, latency"]:::obs
     end
 
-    App -->|opens spans| Tracer
-    Tracer --> LlmCall
-    Sampler -.->|keep or drop| Tracer
-    Tracer -->|trace tree| Export
+    App -->|spans| Tracer
+    Sampler -.-> Tracer
+    LlmCall -.-> Tracer
+    Tracer --> Export
     Export -->|POST trace JSON| Http
+    Engineer --> Pages
+    Pages --> Client
+    Client -->|fetch /api| Http
     Cli -->|serve| Http
-    Http --> Validate
-    Validate -->|ingest| Store
-    Validate -->|call batch| Analysis
-    Store -.->|stored traces| Analysis
-    Prices -.->|token prices| Analysis
+    Http -.-> Validate
+    Http -->|ingest| Store
+    Http --> Analysis
+    Store -.-> Analysis
+    Prices -.-> Analysis
     Analysis --> Slo
-    Analysis -->|summary JSON| Client
-    Store -.->|list and detail views| Client
-    Client --> Pages
-    Pages -->|views traces| Engineer
-    Http -.->|per-route timings| Metrics
+    Http -.->|timings| Metrics
