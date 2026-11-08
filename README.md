@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/adeoluo/llm-observability/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/llm-observability/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/adeoluo/llm-observability/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/llm-observability"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue">
   <img alt="TypeScript" src="https://img.shields.io/badge/typescript-7-3178c6">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
@@ -96,7 +96,7 @@ python -m llm_observability demonstrate   # trace a simulated agent run
 python -m llm_observability prices        # list built-in model prices
 ```
 
-To see the dashboard with sample data (requires Node.js 22.12 or later):
+To see the dashboard with sample data (requires Node.js 26 or later):
 
 ```bash
 (cd web && npm ci && npm run build)
@@ -297,7 +297,7 @@ npm run build
   offsets and widths, self time, open and orphan spans, parent cycles, axis ticks),
   formatting of durations, costs, tokens, and percentages, API client parsing and error
   handling with a stubbed `fetch`, hash routing, and chart geometry.
-- Continuous integration runs the Python job on 3.11 and 3.12, a `web` job (`npm ci`,
+- Continuous integration runs the Python job on 3.12, 3.13, 3.14 and 3.15, a `web` job (`npm ci`,
   type check, tests, build), and a package and Docker image build.
 
 ## Responsible AI
