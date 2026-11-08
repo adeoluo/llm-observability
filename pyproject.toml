@@ -3,9 +3,17 @@ name = "llm-observability"
 version = "0.2.0"
 description = "LLM observability and tracing: a Python tracing library, collector, and JSON API with a TypeScript trace dashboard."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Adeolu Ogunnoiki" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+]
 dependencies = []
 
 [dependency-groups]
@@ -31,7 +39,7 @@ packages = ["src/llm_observability"]
 # ---------------------------------------------------------------------------
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -42,7 +50,7 @@ ignore = []
 known-first-party = ["llm_observability"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
 warn_unused_configs = true
 disallow_untyped_defs = true
