@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from llm_observability.core import Span, SpanStatus, Trace, TraceNode, Tracer
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __all__ = [
     "Span",
