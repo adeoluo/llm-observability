@@ -29,7 +29,7 @@ def _llm_trace(latency_ms: float, *, tokens: int = 1000, error: bool = False) ->
         end_time=latency_ms / 1000.0,
         status=SpanStatus.ERROR if error else SpanStatus.OK,
     )
-    record_llm_call(span, model="gpt-4o", input_tokens=tokens, output_tokens=tokens)
+    record_llm_call(span, model="gpt-6.1-sol", input_tokens=tokens, output_tokens=tokens)
     return Trace(span.trace_id, [span])
 
 
@@ -100,7 +100,7 @@ def _mixed_traces() -> list[Trace]:
     tracer = Tracer(clock=itertools.count(step=5))
     with tracer.span("agent.run"):
         with tracer.span("llm.call") as span:
-            record_llm_call(span, model="gpt-4o", input_tokens=10, output_tokens=5)
+            record_llm_call(span, model="gpt-6.1-sol", input_tokens=10, output_tokens=5)
         with tracer.span("tool.exec"):
             pass
     return tracer.traces()
@@ -118,7 +118,7 @@ def test_search_by_status() -> None:
 
 
 def test_search_by_attribute() -> None:
-    spans = search_spans(_mixed_traces(), attributes={"llm.model": "gpt-4o"})
+    spans = search_spans(_mixed_traces(), attributes={"llm.model": "gpt-6.1-sol"})
     assert len(spans) == 1
 
 

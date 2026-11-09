@@ -28,13 +28,14 @@ class ModelPrice:
         ) / 1_000_000
 
 
-# Illustrative public prices (US dollars per million tokens). Injected, not authoritative;
-# update as provider pricing changes.
+# Public list prices (US dollars per million tokens, standard tier, short context) from the
+# OpenAI and Anthropic pricing pages on 2026-11-08. Injected, not authoritative; providers
+# change prices, so pass your own PriceList for real budgeting.
 DEFAULT_PRICES: dict[str, ModelPrice] = {
-    "gpt-4o": ModelPrice(2.50, 10.00),
-    "gpt-4o-mini": ModelPrice(0.15, 0.60),
-    "claude-3-5-sonnet": ModelPrice(3.00, 15.00),
-    "claude-3-5-haiku": ModelPrice(0.80, 4.00),
+    "gpt-6.1-sol": ModelPrice(2.00, 10.00),
+    "gpt-6-luna": ModelPrice(0.10, 0.50),
+    "claude-sonnet-5-5": ModelPrice(2.00, 10.00),
+    "claude-haiku-5-5": ModelPrice(0.10, 0.50),
 }
 
 

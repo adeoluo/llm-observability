@@ -30,7 +30,7 @@ from llm_observability.search import search_spans
 
 WORKLOAD_SIZES: tuple[int, ...] = (5_000, 15_000, 30_000, 60_000)
 
-_MODELS: tuple[str, ...] = ("gpt-4o", "gpt-4o-mini", "claude-3-5-sonnet", "claude-3-5-haiku")
+_MODELS: tuple[str, ...] = ("gpt-6.1-sol", "gpt-6-luna", "claude-sonnet-5-5", "claude-haiku-5-5")
 
 
 def _generate_traces(count: int) -> list[Trace]:

@@ -15,7 +15,7 @@ const row = {
   start_time: 1793000000.5,
   duration_ms: 1234.5,
   status: "error",
-  models: ["gpt-4o"],
+  models: ["gpt-6.1-sol"],
   span_count: 4,
   llm_calls: 2,
   input_tokens: 800,
@@ -33,7 +33,7 @@ const rawSpan = {
   start_time: 1793000000.6,
   end_time: 1793000001.1,
   status: "error",
-  attributes: { "llm.model": "gpt-4o", "llm.input_tokens": 400, nested: { a: 1 } },
+  attributes: { "llm.model": "gpt-6.1-sol", "llm.input_tokens": 400, nested: { a: 1 } },
   events: [{ timestamp: 1793000001.1, name: "exception", attributes: { type: "timeout" } }],
 };
 
@@ -45,7 +45,7 @@ const summary = {
   latency_p50_ms: 900,
   latency_p95_ms: 1500,
   latency_p99_ms: 1600,
-  by_model: [{ model: "gpt-4o", calls: 3, input_tokens: 1500, output_tokens: 500, cost_usd: 0.01 }],
+  by_model: [{ model: "gpt-6.1-sol", calls: 3, input_tokens: 1500, output_tokens: 500, cost_usd: 0.01 }],
 };
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -92,7 +92,7 @@ describe("parsers", () => {
     const parsed = parseSummary(summary);
     expect(parsed.latencyP95Ms).toBe(1500);
     expect(parsed.byModel[0]).toEqual({
-      model: "gpt-4o",
+      model: "gpt-6.1-sol",
       calls: 3,
       inputTokens: 1500,
       outputTokens: 500,
@@ -121,8 +121,8 @@ describe("traceQuery", () => {
   });
 
   it("encodes every filter and the limit", () => {
-    expect(traceQuery({ status: "error", model: "gpt-4o mini", minLatencyMs: 500 }, 50)).toBe(
-      "?status=error&model=gpt-4o+mini&min_latency_ms=500&limit=50",
+    expect(traceQuery({ status: "error", model: "gpt-6.1-sol mini", minLatencyMs: 500 }, 50)).toBe(
+      "?status=error&model=gpt-6.1-sol+mini&min_latency_ms=500&limit=50",
     );
   });
 });

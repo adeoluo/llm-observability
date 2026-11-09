@@ -26,7 +26,7 @@ def _llm_trace(latency: int, *, tokens: int = 1000, error: bool = False) -> Trac
         end_time=float(latency) / 1000.0,  # latency ms -> seconds
         status=SpanStatus.ERROR if error else SpanStatus.OK,
     )
-    record_llm_call(span, model="gpt-4o", input_tokens=tokens, output_tokens=tokens)
+    record_llm_call(span, model="gpt-6.1-sol", input_tokens=tokens, output_tokens=tokens)
     return Trace(span.trace_id, [span])
 
 
@@ -45,12 +45,12 @@ def test_render_tree_shows_nesting() -> None:
 def test_trace_json_round_trip() -> None:
     tracer = Tracer(clock=itertools.count())
     with tracer.span("agent.run"), tracer.span("llm.call") as span:
-        record_llm_call(span, model="gpt-4o", input_tokens=10, output_tokens=5)
+        record_llm_call(span, model="gpt-6.1-sol", input_tokens=10, output_tokens=5)
     original = tracer.traces()[0]
     restored = trace_from_json(trace_to_json(original))
     assert restored.trace_id == original.trace_id
     assert len(restored) == len(original)
-    assert restored.spans_named("llm.call")[0].attributes["llm.model"] == "gpt-4o"
+    assert restored.spans_named("llm.call")[0].attributes["llm.model"] == "gpt-6.1-sol"
 
 
 # --------------------------------------------------------------------------- #

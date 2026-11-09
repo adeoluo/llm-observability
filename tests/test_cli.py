@@ -38,7 +38,7 @@ def test_cli_prices(capsys: pytest.CaptureFixture[str]) -> None:
     exit_code = main(["prices"])
     output = capsys.readouterr().out
     assert exit_code == 0
-    assert "gpt-4o" in output
+    assert "gpt-6.1-sol" in output
     assert "input" in output
 
 
