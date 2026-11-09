@@ -117,7 +117,7 @@ Trace trace-1 (35000.0 ms)
   - tool.exec [ok] 5000.0 ms
   - llm.call [ok] 5000.0 ms
 
-2 calls, 842 tokens (in 730 / out 112), $0.0029, 35000.0 ms, 0 errors
+2 calls, 842 tokens (in 730 / out 112), $0.0026, 35000.0 ms, 0 errors
 ```
 
 ### Library API
@@ -132,7 +132,7 @@ tracer = Tracer()
 with tracer.span("agent.run"):
     with tracer.span("llm.call") as span:
         # ... call your model ...
-        record_llm_call(span, model="gpt-4o", input_tokens=320, output_tokens=48)
+        record_llm_call(span, model="gpt-6.1-sol", input_tokens=320, output_tokens=48)
 
 metrics = aggregate_metrics(tracer.traces()[0])
 print(metrics.format())
@@ -170,7 +170,7 @@ python -m llm_observability serve --port 8000
 
 curl localhost:8000/health
 curl -s -X POST localhost:8000/summarize -d '{
-  "calls": [{"model": "gpt-4o", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820}],
+  "calls": [{"model": "gpt-6.1-sol", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820}],
   "slo_threshold_ms": 1000
 }'
 

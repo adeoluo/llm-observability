@@ -27,8 +27,8 @@ def test_model_price_rejects_negative() -> None:
 
 def test_price_list_known_and_unknown() -> None:
     prices = PriceList()
-    assert "gpt-4o" in prices
-    assert prices.estimate_cost("gpt-4o", 1000, 1000) > 0.0
+    assert "gpt-6.1-sol" in prices
+    assert prices.estimate_cost("gpt-6.1-sol", 1000, 1000) > 0.0
     assert prices.estimate_cost("unknown-model", 1000, 1000) == 0.0
 
 
@@ -38,7 +38,7 @@ def test_price_list_custom() -> None:
 
 
 def test_default_prices_present() -> None:
-    assert "claude-3-5-sonnet" in DEFAULT_PRICES
+    assert "claude-sonnet-5-5" in DEFAULT_PRICES
 
 
 # --------------------------------------------------------------------------- #
@@ -48,9 +48,9 @@ def test_aggregate_metrics_sums_llm_calls() -> None:
     tracer = Tracer(clock=itertools.count())
     with tracer.span("agent.run"):
         with tracer.span("llm.call") as s1:
-            record_llm_call(s1, model="gpt-4o", input_tokens=1000, output_tokens=500)
+            record_llm_call(s1, model="gpt-6.1-sol", input_tokens=1000, output_tokens=500)
         with tracer.span("llm.call") as s2:
-            record_llm_call(s2, model="gpt-4o", input_tokens=2000, output_tokens=800)
+            record_llm_call(s2, model="gpt-6.1-sol", input_tokens=2000, output_tokens=800)
 
     metrics = aggregate_metrics(tracer.traces()[0])
     assert metrics.llm_calls == 2
@@ -72,13 +72,13 @@ def test_aggregate_metrics_counts_errors() -> None:
 def test_record_llm_call_rejects_negative_tokens() -> None:
     tracer = Tracer(clock=itertools.count())
     with tracer.span("llm.call") as span, pytest.raises(ValueError, match="non-negative"):
-        record_llm_call(span, model="gpt-4o", input_tokens=-1, output_tokens=0)
+        record_llm_call(span, model="gpt-6.1-sol", input_tokens=-1, output_tokens=0)
 
 
 def test_metrics_format() -> None:
     tracer = Tracer(clock=itertools.count())
     with tracer.span("llm.call") as span:
-        record_llm_call(span, model="gpt-4o-mini", input_tokens=100, output_tokens=50)
+        record_llm_call(span, model="gpt-6-luna", input_tokens=100, output_tokens=50)
     text = aggregate_metrics(tracer.traces()[0]).format()
     assert "1 calls" in text
     assert "150 tokens" in text

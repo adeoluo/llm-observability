@@ -26,11 +26,11 @@ def simulated_agent_run() -> Tracer:
     tracer = Tracer(clock=itertools.count(step=5))
     with tracer.span("agent.run", question="What is 21 * 2 and the capital of France?"):
         with tracer.span("llm.call", step=1) as plan:
-            record_llm_call(plan, model="gpt-4o", input_tokens=320, output_tokens=48)
+            record_llm_call(plan, model="gpt-6.1-sol", input_tokens=320, output_tokens=48)
         with tracer.span("tool.exec", tool="calculator", input="21 * 2") as tool:
             tool.set_attribute("output", "42")
         with tracer.span("llm.call", step=2) as answer:
-            record_llm_call(answer, model="gpt-4o", input_tokens=410, output_tokens=64)
+            record_llm_call(answer, model="gpt-6.1-sol", input_tokens=410, output_tokens=64)
     return tracer
 
 
@@ -38,10 +38,10 @@ def simulated_agent_run() -> Tracer:
 
 _SAMPLE_EPOCH = 1_793_000_000.0
 _MS_PER_OUTPUT_TOKEN = {
-    "gpt-4o": 11.0,
-    "gpt-4o-mini": 6.0,
-    "claude-3-5-sonnet": 13.0,
-    "claude-3-5-haiku": 7.0,
+    "gpt-6.1-sol": 11.0,
+    "gpt-6-luna": 6.0,
+    "claude-sonnet-5-5": 13.0,
+    "claude-haiku-5-5": 7.0,
 }
 _TOOLS = ("web_search", "calculator", "sql_query", "weather_lookup")
 _ERROR_TYPES = ("rate_limit", "timeout", "invalid_request")
