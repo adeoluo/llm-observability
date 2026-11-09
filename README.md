@@ -220,6 +220,9 @@ uv run python -m llm_observability serve --port 8000 --demo-traces 200
 # open http://localhost:8000/ui/
 ```
 
+Without Node, download `llm-observability-dashboard-<version>.zip` from the release, unzip it
+into `web/dist` in the directory you run the service from, and start the service there.
+
 For development, `npm run dev` in `web/` starts Vite with hot reload and proxies `/api` to
 the service at `http://127.0.0.1:8000` (override with `LLM_OBS_API`). `--demo-traces N`
 preloads N seeded sample traces (chat, retrieval, and agent runs across four models, with
