@@ -1,7 +1,7 @@
 {
   "name": "llm-observability-dashboard",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "TypeScript trace viewer for the llm-observability Python service.",
   "type": "module",
   "engines": {
