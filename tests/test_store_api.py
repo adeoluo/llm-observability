@@ -40,9 +40,9 @@ def _service() -> ObservabilityService:
     service = ObservabilityService()
     service.store.extend(
         [
-            _trace("t1", model="gpt-4o", latency_ms=300.0, error=False, start=100.0),
-            _trace("t2", model="gpt-4o-mini", latency_ms=1200.0, error=True, start=200.0),
-            _trace("t3", model="gpt-4o", latency_ms=800.0, error=False, start=300.0),
+            _trace("t1", model="gpt-6.1-sol", latency_ms=300.0, error=False, start=100.0),
+            _trace("t2", model="gpt-6-luna", latency_ms=1200.0, error=True, start=200.0),
+            _trace("t3", model="gpt-6.1-sol", latency_ms=800.0, error=False, start=300.0),
         ]
     )
     return service
@@ -50,10 +50,10 @@ def _service() -> ObservabilityService:
 
 def test_store_evicts_oldest_and_replaces() -> None:
     store = TraceStore(max_traces=2)
-    store.add(_trace("a", model="gpt-4o", latency_ms=1, error=False, start=0))
-    store.add(_trace("b", model="gpt-4o", latency_ms=1, error=False, start=1))
-    store.add(_trace("a", model="gpt-4o", latency_ms=5, error=False, start=2))
-    store.add(_trace("c", model="gpt-4o", latency_ms=1, error=False, start=3))
+    store.add(_trace("a", model="gpt-6.1-sol", latency_ms=1, error=False, start=0))
+    store.add(_trace("b", model="gpt-6.1-sol", latency_ms=1, error=False, start=1))
+    store.add(_trace("a", model="gpt-6.1-sol", latency_ms=5, error=False, start=2))
+    store.add(_trace("c", model="gpt-6.1-sol", latency_ms=1, error=False, start=3))
     assert len(store) == 2
     assert store.get("b") is None
     assert store.get("a") is not None
@@ -69,7 +69,7 @@ def test_list_traces_newest_first_with_summary_fields() -> None:
     assert ids == ["t3", "t2", "t1"]
     row = payload["traces"][1]
     assert row["status"] == "error"
-    assert row["models"] == ["gpt-4o-mini"]
+    assert row["models"] == ["gpt-6-luna"]
     assert row["name"] == "agent.run"
     assert row["duration_ms"] == pytest.approx(1200.0)
     assert row["total_tokens"] == 140
@@ -82,9 +82,9 @@ def test_list_traces_newest_first_with_summary_fields() -> None:
     [
         ("?status=error", ["t2"]),
         ("?status=ok", ["t3", "t1"]),
-        ("?model=gpt-4o", ["t3", "t1"]),
+        ("?model=gpt-6.1-sol", ["t3", "t1"]),
         ("?min_latency_ms=500", ["t3", "t2"]),
-        ("?status=ok&min_latency_ms=500&model=gpt-4o", ["t3"]),
+        ("?status=ok&min_latency_ms=500&model=gpt-6.1-sol", ["t3"]),
         ("?limit=1", ["t3"]),
         ("?status=&model=", ["t3", "t2", "t1"]),
     ],
@@ -113,7 +113,7 @@ def test_get_trace_detail_and_missing() -> None:
     llm = next(span for span in payload["spans"] if span["name"] == "llm.call")
     assert llm["parent_id"] == "t2-root"
     assert llm["status"] == "error"
-    assert llm["attributes"]["llm.model"] == "gpt-4o-mini"
+    assert llm["attributes"]["llm.model"] == "gpt-6-luna"
     status, payload = handle("GET", "/api/traces/nope", {}, service)
     assert status == 404
 
@@ -127,8 +127,8 @@ def test_summary_endpoint() -> None:
     assert payload["latency_p50_ms"] == pytest.approx(800.0)
     assert payload["latency_p99_ms"] >= payload["latency_p95_ms"] >= payload["latency_p50_ms"]
     models = {entry["model"]: entry for entry in payload["by_model"]}
-    assert models["gpt-4o"]["calls"] == 2
-    assert models["gpt-4o-mini"]["output_tokens"] == 40
+    assert models["gpt-6.1-sol"]["calls"] == 2
+    assert models["gpt-6-luna"]["output_tokens"] == 40
 
 
 def test_summary_of_empty_store() -> None:

@@ -5,9 +5,9 @@ import { barGeometry, histogram, niceMax, percentile } from "../src/stats";
 describe("router", () => {
   it.each<[string, Route]>([
     ["", { page: "traces", filters: {} }],
-    ["#/traces?status=error&model=gpt-4o&min_latency_ms=250", {
+    ["#/traces?status=error&model=gpt-6.1-sol&min_latency_ms=250", {
       page: "traces",
-      filters: { status: "error", model: "gpt-4o", minLatencyMs: 250 },
+      filters: { status: "error", model: "gpt-6.1-sol", minLatencyMs: 250 },
     }],
     ["#/trace/trace%2F1", { page: "trace", traceId: "trace/1" }],
     ["#/summary", { page: "summary" }],

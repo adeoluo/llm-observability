@@ -30,8 +30,8 @@ def test_span_double_finish_raises() -> None:
 
 def test_span_attributes() -> None:
     span = Span(name="op", span_id="s1", trace_id="t1")
-    span.set_attribute("model", "gpt-4o")
-    assert span.attributes["model"] == "gpt-4o"
+    span.set_attribute("model", "gpt-6.1-sol")
+    assert span.attributes["model"] == "gpt-6.1-sol"
 
 
 def test_unfinished_span_zero_duration() -> None:
@@ -96,10 +96,10 @@ def test_separate_roots_are_separate_traces() -> None:
 
 def test_span_attributes_recorded_via_context() -> None:
     tracer = Tracer(clock=itertools.count())
-    with tracer.span("llm.call", model="gpt-4o") as span:
+    with tracer.span("llm.call", model="gpt-6.1-sol") as span:
         span.set_attribute("tokens", 128)
     finished = tracer.finished_spans[0]
-    assert finished.attributes["model"] == "gpt-4o"
+    assert finished.attributes["model"] == "gpt-6.1-sol"
     assert finished.attributes["tokens"] == 128
 
 
