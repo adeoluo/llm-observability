@@ -1,6 +1,7 @@
 name: Release assets
 
-# Builds the sdist and wheel for a release and attaches them, with SHA256SUMS. Runs when a
+# Builds the sdist, the wheel and the built dashboard (a zip of web/dist, which the wheel does not
+# include) for a release and attaches them, with SHA256SUMS. Runs when a
 # release is published; run it by hand with a tag to rebuild the assets of an existing release.
 on:
   release:
@@ -24,6 +25,17 @@ jobs:
           ref: ${{ inputs.tag || github.event.release.tag_name }}
       - uses: astral-sh/setup-uv@v10.3.3
       - run: uv build --out-dir dist
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build the dashboard
+        env:
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+        run: |
+          cd web && npm ci && npm run build
+          cd dist && zip -qr "../../dist/llm-observability-dashboard-${TAG#v}.zip" .
       - name: Check the wheel installs and carries the release version
         env:
           TAG: ${{ inputs.tag || github.event.release.tag_name }}
