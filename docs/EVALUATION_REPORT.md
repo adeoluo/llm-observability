@@ -15,7 +15,7 @@
 |---|---|
 | LLM calls | 2 |
 | Total tokens | 842 (in 730 / out 112) |
-| Estimated cost | $0.0029 |
+| Estimated cost | $0.0026 |
 | Spans | 4 |
 | Errors | 0 |
 

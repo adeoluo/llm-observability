@@ -74,7 +74,9 @@ See the [ADRs](docs/adr/) for key choices.
 | Batch aggregation into metrics | ~604,000 traces / sec |
 
 Tracing overhead is a few microseconds per span, which is small relative to the model calls
-it measures.
+it measures. These figures are from an idle Apple M1 and move with the machine: a rerun on the
+same laptop gave about 170,000 and 541,000, and an outside review on a small virtual machine
+measured 24 to 35 times less.
 
 ### Scale
 
@@ -136,6 +138,9 @@ Trace trace-1 (35000.0 ms)
 
 2 calls, 842 tokens (in 730 / out 112), $0.0026, 35000.0 ms, 0 errors
 ```
+
+The dollar figure uses the bundled price list (`python -m llm_observability prices`), which is
+an illustrative table, not current vendor pricing; pass your own `PriceList` for real costs.
 
 ### Library API
 
@@ -308,7 +313,7 @@ npm test                                  # vitest
 npm run build
 ```
 
-- **Python (pytest, 108 tests):** tracing primitives, cost and metrics, exporters,
+- **Python (pytest, 109 tests):** tracing primitives, cost and metrics, exporters,
   analysis, alerting and SLOs, search, sampling, the CLI, the service handler for every
   route (including filters, validation errors, and 404s), the trace store (eviction,
   replacement, summaries), safe static file resolution for `/ui`, and the sample-trace
