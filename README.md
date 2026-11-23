@@ -16,6 +16,21 @@
 
 > **Evidence level: unit tested.** Load figures come from synthetic spans in a single process. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
+## In plain English
+
+One question to an AI app can set off many hidden steps: model calls, tool calls, document
+lookups. This toolkit records each step with its time, token count, cost and errors, so you
+can see what is slow or expensive.
+
+- **Low overhead.** It records about 194,000 steps per second and summarizes about 604,000
+  traces per second.
+- **It flags regressions.** It compares a new run with an old one and points out what got
+  slower or more costly.
+- **It comes with a collector service and a web dashboard** to browse what was recorded.
+
+**Where it falls short:** the speed numbers come from made-up data in one process. It has
+not been run on a live system.
+
 ## Motivation
 
 LLM applications are hard to see into. A single user request fans out into nested model
