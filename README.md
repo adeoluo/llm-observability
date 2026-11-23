@@ -14,6 +14,8 @@
 
 ---
 
+> **Evidence level: unit tested.** Load figures come from synthetic spans in a single process. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+
 ## Motivation
 
 LLM applications are hard to see into. A single user request fans out into nested model
