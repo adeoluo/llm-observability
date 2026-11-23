@@ -16,7 +16,7 @@
 
 > **Evidence level: unit tested.** Load figures come from synthetic spans in a single process. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
-## In plain English
+## Summary
 
 One question to an AI app can set off many hidden steps: model calls, tool calls, document
 lookups. This toolkit records each step with its time, token count, cost and errors, so you
