@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from llm_observability.service import ObservabilityService, handle
 
-_MODELS = ["gpt-6.1-sol", "gpt-6-luna", "claude-sonnet-5-5", "claude-haiku-5-5"]
+_MODELS = ["gpt-4o", "gpt-4o-mini", "claude-sonnet-4-20250514", "claude-3-5-haiku-latest"]
 
 
 def _batch(rng: random.Random, size: int) -> dict[str, object]:

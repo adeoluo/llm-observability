@@ -32,10 +32,10 @@ class ModelPrice:
 # OpenAI and Anthropic pricing pages on 2026-11-08. Injected, not authoritative; providers
 # change prices, so pass your own PriceList for real budgeting.
 DEFAULT_PRICES: dict[str, ModelPrice] = {
-    "gpt-6.1-sol": ModelPrice(2.00, 10.00),
-    "gpt-6-luna": ModelPrice(0.10, 0.50),
-    "claude-sonnet-5-5": ModelPrice(2.00, 10.00),
-    "claude-haiku-5-5": ModelPrice(0.10, 0.50),
+    "gpt-4o": ModelPrice(2.00, 10.00),
+    "gpt-4o-mini": ModelPrice(0.10, 0.50),
+    "claude-sonnet-4-20250514": ModelPrice(2.00, 10.00),
+    "claude-3-5-haiku-latest": ModelPrice(0.10, 0.50),
 }
 
 

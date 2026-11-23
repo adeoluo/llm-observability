@@ -12,8 +12,8 @@ cost, latency, and error rate. They have a batch of recorded calls from each mod
 ```bash
 curl -s -X POST localhost:8000/summarize -d '{
   "calls": [
-    {"model": "gpt-6.1-sol", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820},
-    {"model": "gpt-6.1-sol", "input_tokens": 1200, "output_tokens": 250, "latency_ms": 1500, "error": true}
+    {"model": "gpt-4o", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820},
+    {"model": "gpt-4o", "input_tokens": 1200, "output_tokens": 250, "latency_ms": 1500, "error": true}
   ],
   "slo_threshold_ms": 1000
 }'

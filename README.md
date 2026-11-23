@@ -69,7 +69,7 @@ numbers are environment-specific, but the shape is the point: aggregation throug
 roughly flat, memory and span count grow linearly, and query latency grows with the number
 of spans scanned.
 
-| Traces | Aggregation (s) | Throughput (traces/s) | Peak memory (MiB) | Spans | Query (ms) |
+| Synthetic traces | Aggregation (s) | Throughput (traces/s) | Peak memory (MiB) | Spans | Query (ms) |
 |---:|---:|---:|---:|---:|---:|
 | 5,000 | 0.157 | ~31,800 | 1.03 | 10,000 | 15.41 |
 | 15,000 | 0.544 | ~27,600 | 3.08 | 30,000 | 61.70 |
@@ -96,7 +96,7 @@ python -m llm_observability demonstrate   # trace a simulated agent run
 python -m llm_observability prices        # list built-in model prices
 ```
 
-To see the dashboard with sample data (requires Node.js 26 or later):
+To see the dashboard with sample data (requires Node.js 20 or later):
 
 ```bash
 (cd web && npm ci && npm run build)
@@ -132,7 +132,7 @@ tracer = Tracer()
 with tracer.span("agent.run"):
     with tracer.span("llm.call") as span:
         # ... call your model ...
-        record_llm_call(span, model="gpt-6.1-sol", input_tokens=320, output_tokens=48)
+        record_llm_call(span, model="gpt-4o", input_tokens=320, output_tokens=48)
 
 metrics = aggregate_metrics(tracer.traces()[0])
 print(metrics.format())
@@ -170,7 +170,7 @@ python -m llm_observability serve --port 8000
 
 curl localhost:8000/health
 curl -s -X POST localhost:8000/summarize -d '{
-  "calls": [{"model": "gpt-6.1-sol", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820}],
+  "calls": [{"model": "gpt-4o", "input_tokens": 1000, "output_tokens": 300, "latency_ms": 820}],
   "slo_threshold_ms": 1000
 }'
 

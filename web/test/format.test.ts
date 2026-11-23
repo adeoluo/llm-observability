@@ -55,7 +55,7 @@ describe("number formatting", () => {
     expect(formatAttribute(true)).toBe("true");
     expect(formatAttribute(42)).toBe("42");
     expect(formatAttribute(0.1 + 0.2)).toBe("0.3");
-    expect(formatAttribute("gpt-6.1-sol")).toBe("gpt-6.1-sol");
+    expect(formatAttribute("gpt-4o")).toBe("gpt-4o");
   });
 });
 
@@ -63,14 +63,14 @@ describe("span helpers", () => {
   it("extracts LLM call details", () => {
     const call = span("c", null, 0, 1, {
       attributes: {
-        "llm.model": "gpt-6.1-sol",
+        "llm.model": "gpt-4o",
         "llm.input_tokens": 400,
         "llm.output_tokens": 60,
         "llm.cost_usd": 0.0016,
       },
     });
     expect(llmDetails(call)).toEqual({
-      model: "gpt-6.1-sol",
+      model: "gpt-4o",
       inputTokens: 400,
       outputTokens: 60,
       totalTokens: 460,
