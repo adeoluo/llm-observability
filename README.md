@@ -14,7 +14,7 @@
 
 ---
 
-> **Evidence level: unit tested.** The speed figures come from synthetic (program-generated) spans in a single process. No one has reproduced them independently, and the project has not been used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+> **Evidence level: unit tested.** The speed figures come from synthetic (program-generated) spans in a single process. No one has reproduced them independently, and the project has not been used in production.
 
 ## Highlights
 
